@@ -23,7 +23,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		res = shortener.GetFullURL(id)
 
 		w.Header().Set("Location", res)
-		w.WriteHeader(http.StatusTemporaryRedirect)
+		//w.WriteHeader(http.StatusTemporaryRedirect)
 	case "POST":
 		b, _ := io.ReadAll(r.Body)
 
