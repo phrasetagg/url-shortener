@@ -32,5 +32,5 @@ func (s *Shortener) Shorten(URL string) string {
 	encodedURL := hex.EncodeToString(h.Sum(nil))
 	s.URLs[encodedURL] = URL
 
-	return encodedURL
+	return "https://localhost:8080/" + encodedURL
 }
