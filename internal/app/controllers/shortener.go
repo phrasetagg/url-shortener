@@ -14,17 +14,32 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		id := r.URL.Path[1:]
-		res = shortener.GetFullUrl(id)
+
+		if id == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		res = shortener.GetFullURL(id)
+
 		w.Header().Set("Location", res)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	case "POST":
 		b, _ := io.ReadAll(r.Body)
-		res = shortener.Shorten(string(b))
 
+		URL := string(b)
+
+		if URL == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		res = shortener.Shorten(URL)
+
+		w.WriteHeader(http.StatusCreated)
 		_, err := w.Write([]byte(res))
 		if err != nil {
 			return
 		}
-		w.WriteHeader(http.StatusCreated)
 	}
 }

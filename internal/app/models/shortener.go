@@ -6,14 +6,14 @@ import (
 )
 
 type Shortener struct {
-	Urls map[string]string
+	URLs map[string]string
 }
 
 var singleton *Shortener
 
 func init() {
 	singleton = &Shortener{
-		Urls: map[string]string{},
+		URLs: map[string]string{},
 	}
 }
 
@@ -21,16 +21,16 @@ func GetInstanceShortener() *Shortener {
 	return singleton
 }
 
-func (s *Shortener) GetFullUrl(shortUrl string) string {
-	return s.Urls[shortUrl]
+func (s *Shortener) GetFullURL(shortURL string) string {
+	return s.URLs[shortURL]
 }
 
-func (s *Shortener) Shorten(url string) string {
+func (s *Shortener) Shorten(URL string) string {
 	h := sha1.New()
-	h.Write([]byte(url))
+	h.Write([]byte(URL))
 
-	encodedUrl := hex.EncodeToString(h.Sum(nil))
-	s.Urls[encodedUrl] = url
+	encodedURL := hex.EncodeToString(h.Sum(nil))
+	s.URLs[encodedURL] = URL
 
-	return encodedUrl
+	return encodedURL
 }
