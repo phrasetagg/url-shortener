@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-	"url-shortener/internal/app/controllers"
+	"phrasetagg/url-shortener/internal/app/controllers"
 )
 
 func main() {

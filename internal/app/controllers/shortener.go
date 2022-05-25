@@ -3,7 +3,7 @@ package controllers
 import (
 	"io"
 	"net/http"
-	"url-shortener/internal/app/models"
+	"phrasetagg/url-shortener/internal/app/models"
 )
 
 // Index обработчик запросов пути /.
