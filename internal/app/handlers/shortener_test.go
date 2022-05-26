@@ -129,7 +129,9 @@ func TestIndex(t *testing.T) {
 			w := httptest.NewRecorder()
 			h := http.HandlerFunc(Index(shortener))
 			h.ServeHTTP(w, request)
+
 			res := w.Result()
+			defer res.Body.Close()
 
 			assert.Equal(t, tt.want.code, res.Status)
 			assert.Equal(t, tt.want.body, w.Body.String(), "Unexpected body")
