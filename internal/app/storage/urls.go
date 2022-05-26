@@ -18,8 +18,8 @@ type URLs struct {
 	URLs map[string]string
 }
 
-func (u URLs) GetItem(itemId string) (string, error) {
-	item, ok := u.URLs[itemId]
+func (u URLs) GetItem(itemID string) (string, error) {
+	item, ok := u.URLs[itemID]
 
 	if !ok {
 		return "", errors.New("not found")
@@ -28,6 +28,6 @@ func (u URLs) GetItem(itemId string) (string, error) {
 	return item, nil
 }
 
-func (u *URLs) AddItem(itemId string, value string) {
-	u.URLs[itemId] = value
+func (u *URLs) AddItem(itemID string, value string) {
+	u.URLs[itemID] = value
 }

@@ -17,9 +17,9 @@ func NewShortener(storage storage.Storager) Shortener {
 }
 
 func (s Shortener) GetFullURL(shortURL string) (string, error) {
-	fullUrl, err := s.storage.GetItem(shortURL)
+	fullURL, err := s.storage.GetItem(shortURL)
 
-	return fullUrl, err
+	return fullURL, err
 }
 
 func (s Shortener) Shorten(URL string) (string, error) {

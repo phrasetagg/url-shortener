@@ -21,7 +21,7 @@ func Index(shortener models.Shortener) http.HandlerFunc {
 
 			if err != nil {
 				w.WriteHeader(http.StatusNotFound)
-				_, err = w.Write([]byte(err.Error()))
+				w.Write([]byte(err.Error()))
 				return
 			}
 
