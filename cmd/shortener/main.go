@@ -1,15 +1,7 @@
 package main
 
-import (
-	"net/http"
-	"phrasetagg/url-shortener/internal/app/controllers"
-)
+import "phrasetagg/url-shortener/internal/app/server"
 
 func main() {
-	http.HandleFunc("/", controllers.Index)
-
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		return
-	}
+	server.StartServer()
 }

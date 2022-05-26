@@ -3,34 +3,32 @@ package models
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"phrasetagg/url-shortener/internal/app/storage"
 )
 
 type Shortener struct {
-	URLs map[string]string
+	storage storage.Storager
 }
 
-var singleton *Shortener
-
-func init() {
-	singleton = &Shortener{
-		URLs: map[string]string{},
+func NewShortener(storage storage.Storager) Shortener {
+	return Shortener{
+		storage: storage,
 	}
 }
 
-func GetInstanceShortener() *Shortener {
-	return singleton
+func (s Shortener) GetFullURL(shortURL string) (string, error) {
+	fullUrl, err := s.storage.GetItem(shortURL)
+
+	return fullUrl, err
 }
 
-func (s *Shortener) GetFullURL(shortURL string) string {
-	return s.URLs[shortURL]
-}
-
-func (s *Shortener) Shorten(URL string) string {
+func (s Shortener) Shorten(URL string) (string, error) {
 	h := sha1.New()
 	h.Write([]byte(URL))
 
 	encodedURL := hex.EncodeToString(h.Sum(nil))
-	s.URLs[encodedURL] = URL
 
-	return "http://localhost:8080/" + encodedURL
+	s.storage.AddItem(encodedURL, URL)
+
+	return "http://localhost:8080/" + encodedURL, nil
 }
