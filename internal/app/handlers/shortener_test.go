@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"bytes"
+	"context"
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -12,9 +14,10 @@ import (
 
 func TestIndex(t *testing.T) {
 	type args struct {
-		URL    string
-		method string
-		body   string
+		URL      string
+		method   string
+		shortURL string
+		body     string
 	}
 
 	type want struct {
@@ -43,8 +46,9 @@ func TestIndex(t *testing.T) {
 		{
 			name: "Status 307",
 			args: args{
-				URL:    "/e7f4f2110990a57302e2639e33e465092613f209",
-				method: http.MethodGet,
+				URL:      "/{shortURL}",
+				method:   http.MethodGet,
+				shortURL: "e7f4f2110990a57302e2639e33e465092613f209",
 			},
 			want: want{
 				code:           "307 Temporary Redirect",
@@ -66,8 +70,9 @@ func TestIndex(t *testing.T) {
 		{
 			name: "Status 307 N2",
 			args: args{
-				URL:    "/5f12e5a8cc3d801aea41913df4fc427919aa0799",
-				method: http.MethodGet,
+				URL:      "/{shortURL}",
+				method:   http.MethodGet,
+				shortURL: "5f12e5a8cc3d801aea41913df4fc427919aa0799",
 			},
 			want: want{
 				code:           "307 Temporary Redirect",
@@ -82,13 +87,15 @@ func TestIndex(t *testing.T) {
 			},
 			want: want{
 				code: "400 Bad Request",
+				body: "shortURL is required\n",
 			},
 		},
 		{
 			name: "Status 400 GET Undefined short url",
 			args: args{
-				URL:    "/some_undefined_short_url",
-				method: http.MethodGet,
+				URL:      "/{shortURL}",
+				method:   http.MethodGet,
+				shortURL: "some_undefined_short_url",
 			},
 			want: want{
 				code: "404 Not Found",
@@ -103,13 +110,15 @@ func TestIndex(t *testing.T) {
 			},
 			want: want{
 				code: "400 Bad Request",
+				body: "URL in body is required\n",
 			},
 		},
 		{
 			name: "Status 307 Check that first link is still working",
 			args: args{
-				URL:    "/e7f4f2110990a57302e2639e33e465092613f209",
-				method: http.MethodGet,
+				URL:      "/{shortURL}",
+				method:   http.MethodGet,
+				shortURL: "e7f4f2110990a57302e2639e33e465092613f209",
 			},
 			want: want{
 				code:           "307 Temporary Redirect",
@@ -127,7 +136,20 @@ func TestIndex(t *testing.T) {
 
 			request := httptest.NewRequest(tt.args.method, tt.args.URL, buffer)
 			w := httptest.NewRecorder()
-			h := http.HandlerFunc(Index(shortener))
+
+			if tt.args.shortURL != "" {
+				rctx := chi.NewRouteContext()
+				rctx.URLParams.Add("shortURL", tt.args.shortURL)
+
+				request = request.WithContext(context.WithValue(request.Context(), chi.RouteCtxKey, rctx))
+			}
+
+			h := GetFullURL(shortener)
+
+			if tt.args.method == http.MethodPost {
+				h = ShortenLink(shortener)
+			}
+
 			h.ServeHTTP(w, request)
 
 			res := w.Result()

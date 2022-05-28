@@ -1,6 +1,8 @@
 package server
 
 import (
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
 	"phrasetagg/url-shortener/internal/app/handlers"
@@ -11,7 +13,13 @@ import (
 func StartServer() {
 	shortener := models.NewShortener(storage.GetURLsInstance())
 
-	http.HandleFunc("/", handlers.Index(shortener))
+	r := chi.NewRouter()
+	r.Use(middleware.Recoverer)
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	r.Route("/", func(r chi.Router) {
+		r.Get("/{shortURL}", handlers.GetFullURL(shortener))
+		r.Post("/", handlers.ShortenLink(shortener))
+	})
+
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
