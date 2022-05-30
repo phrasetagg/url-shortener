@@ -32,7 +32,7 @@ func GetFullURL(shortener models.Shortener) http.HandlerFunc {
 	}
 }
 
-func ShortenLink(shortener models.Shortener) http.HandlerFunc {
+func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		b, _ := io.ReadAll(r.Body)
 
@@ -43,15 +43,10 @@ func ShortenLink(shortener models.Shortener) http.HandlerFunc {
 			return
 		}
 
-		res, err := shortener.Shorten(URL)
-
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+		res := shortener.Shorten(URL)
 
 		w.WriteHeader(http.StatusCreated)
-		_, err = w.Write([]byte(res))
+		_, err := w.Write([]byte(res))
 		if err != nil {
 			return
 		}

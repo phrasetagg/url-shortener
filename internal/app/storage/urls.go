@@ -31,3 +31,7 @@ func (u URLs) GetItem(itemID string) (string, error) {
 func (u *URLs) AddItem(itemID string, value string) {
 	u.URLs[itemID] = value
 }
+
+func (u URLs) GetItems() map[string]string {
+	return u.URLs
+}

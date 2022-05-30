@@ -40,7 +40,7 @@ func TestIndex(t *testing.T) {
 			},
 			want: want{
 				code: "201 Created",
-				body: "http://localhost:8080/e7f4f2110990a57302e2639e33e465092613f209",
+				body: "http://localhost:8080/a",
 			},
 		},
 		{
@@ -48,7 +48,7 @@ func TestIndex(t *testing.T) {
 			args: args{
 				URL:      "/{shortURL}",
 				method:   http.MethodGet,
-				shortURL: "e7f4f2110990a57302e2639e33e465092613f209",
+				shortURL: "a",
 			},
 			want: want{
 				code:           "307 Temporary Redirect",
@@ -64,7 +64,7 @@ func TestIndex(t *testing.T) {
 			},
 			want: want{
 				code: "201 Created",
-				body: "http://localhost:8080/5f12e5a8cc3d801aea41913df4fc427919aa0799",
+				body: "http://localhost:8080/b",
 			},
 		},
 		{
@@ -72,7 +72,7 @@ func TestIndex(t *testing.T) {
 			args: args{
 				URL:      "/{shortURL}",
 				method:   http.MethodGet,
-				shortURL: "5f12e5a8cc3d801aea41913df4fc427919aa0799",
+				shortURL: "b",
 			},
 			want: want{
 				code:           "307 Temporary Redirect",
@@ -118,7 +118,7 @@ func TestIndex(t *testing.T) {
 			args: args{
 				URL:      "/{shortURL}",
 				method:   http.MethodGet,
-				shortURL: "e7f4f2110990a57302e2639e33e465092613f209",
+				shortURL: "a",
 			},
 			want: want{
 				code:           "307 Temporary Redirect",
@@ -147,7 +147,7 @@ func TestIndex(t *testing.T) {
 			h := GetFullURL(shortener)
 
 			if tt.args.method == http.MethodPost {
-				h = ShortenLink(shortener)
+				h = ShortenURL(shortener)
 			}
 
 			h.ServeHTTP(w, request)

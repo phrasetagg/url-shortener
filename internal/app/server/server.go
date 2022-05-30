@@ -18,7 +18,7 @@ func StartServer() {
 
 	r.Route("/", func(r chi.Router) {
 		r.Get("/{shortURL}", handlers.GetFullURL(shortener))
-		r.Post("/", handlers.ShortenLink(shortener))
+		r.Post("/", handlers.ShortenURL(shortener))
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", r))
