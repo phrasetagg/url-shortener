@@ -12,7 +12,8 @@ import (
 )
 
 func StartServer() {
-	shortener := models.NewShortener(storage.NewURLStorage())
+	urlStorage := storage.NewURLStorage()
+	shortener := models.NewShortener(urlStorage)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)

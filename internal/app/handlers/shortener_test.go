@@ -128,9 +128,11 @@ func TestIndex(t *testing.T) {
 		},
 	}
 
+	urlStorage := storage.NewURLStorage()
+	shortener := models.NewShortener(urlStorage)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			shortener := models.NewShortener(storage.NewURLStorage())
 
 			buffer := new(bytes.Buffer)
 			buffer.WriteString(tt.args.body)

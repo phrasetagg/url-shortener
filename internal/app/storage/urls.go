@@ -5,21 +5,22 @@ import (
 	"sync"
 )
 
-var (
-	urls  = map[string]string{}
-	mutex = &sync.RWMutex{}
-)
-
-type URLStorage struct{}
+type URLStorage struct {
+	urls  map[string]string
+	mutex *sync.RWMutex
+}
 
 func NewURLStorage() *URLStorage {
-	return &URLStorage{}
+	return &URLStorage{
+		urls:  make(map[string]string),
+		mutex: new(sync.RWMutex),
+	}
 }
 
 func (u URLStorage) GetItem(itemID string) (string, error) {
-	mutex.RLock()
-	item, ok := urls[itemID]
-	mutex.RUnlock()
+	u.mutex.RLock()
+	item, ok := u.urls[itemID]
+	u.mutex.RUnlock()
 
 	if !ok {
 		return "", errors.New("not found")
@@ -29,11 +30,11 @@ func (u URLStorage) GetItem(itemID string) (string, error) {
 }
 
 func (u *URLStorage) AddItem(itemID string, value string) {
-	mutex.Lock()
-	urls[itemID] = value
-	mutex.Unlock()
+	u.mutex.Lock()
+	u.urls[itemID] = value
+	u.mutex.Unlock()
 }
 
 func (u URLStorage) GetItems() map[string]string {
-	return urls
+	return u.urls
 }
