@@ -3,13 +3,14 @@ package handlers
 import (
 	"bytes"
 	"context"
-	"github.com/go-chi/chi/v5"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"phrasetagg/url-shortener/internal/app/models"
 	"phrasetagg/url-shortener/internal/app/storage"
 	"testing"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIndex(t *testing.T) {
@@ -129,7 +130,7 @@ func TestIndex(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			shortener := models.NewShortener(storage.GetURLsInstance())
+			shortener := models.NewShortener(storage.NewURLStorage())
 
 			buffer := new(bytes.Buffer)
 			buffer.WriteString(tt.args.body)

@@ -2,24 +2,24 @@ package storage
 
 import (
 	"errors"
+	"sync"
 )
 
-var instance URLs
+var (
+	urls  = map[string]string{}
+	mutex = &sync.RWMutex{}
+)
 
-func init() {
-	instance = URLs{URLs: map[string]string{}}
+type URLStorage struct{}
+
+func NewURLStorage() *URLStorage {
+	return &URLStorage{}
 }
 
-func GetURLsInstance() *URLs {
-	return &instance
-}
-
-type URLs struct {
-	URLs map[string]string
-}
-
-func (u URLs) GetItem(itemID string) (string, error) {
-	item, ok := u.URLs[itemID]
+func (u URLStorage) GetItem(itemID string) (string, error) {
+	mutex.RLock()
+	item, ok := urls[itemID]
+	mutex.RUnlock()
 
 	if !ok {
 		return "", errors.New("not found")
@@ -28,10 +28,12 @@ func (u URLs) GetItem(itemID string) (string, error) {
 	return item, nil
 }
 
-func (u *URLs) AddItem(itemID string, value string) {
-	u.URLs[itemID] = value
+func (u *URLStorage) AddItem(itemID string, value string) {
+	mutex.Lock()
+	urls[itemID] = value
+	mutex.Unlock()
 }
 
-func (u URLs) GetItems() map[string]string {
-	return u.URLs
+func (u URLStorage) GetItems() map[string]string {
+	return urls
 }

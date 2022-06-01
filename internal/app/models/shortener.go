@@ -10,9 +10,11 @@ type Shortener struct {
 
 const HostURL = "http://localhost:8080/"
 
-var firstShortURL = "a"
-var lastShortURL string
-var maxCharCode = rune(122) // Буква z
+var (
+	firstShortURL = "a"
+	lastShortURL  string
+	maxCharCode   = rune(122) // Буква z
+)
 
 func NewShortener(storage storage.Storager) Shortener {
 	return Shortener{

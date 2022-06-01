@@ -1,17 +1,18 @@
 package server
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
 	"phrasetagg/url-shortener/internal/app/handlers"
 	"phrasetagg/url-shortener/internal/app/models"
 	"phrasetagg/url-shortener/internal/app/storage"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func StartServer() {
-	shortener := models.NewShortener(storage.GetURLsInstance())
+	shortener := models.NewShortener(storage.NewURLStorage())
 
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)

@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"github.com/go-chi/chi/v5"
 	"io"
 	"net/http"
 	"phrasetagg/url-shortener/internal/app/models"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func GetFullURL(shortener models.Shortener) http.HandlerFunc {
@@ -17,7 +18,6 @@ func GetFullURL(shortener models.Shortener) http.HandlerFunc {
 		}
 
 		fullURL, err := shortener.GetFullURL(id)
-
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			_, err := w.Write([]byte(err.Error()))
