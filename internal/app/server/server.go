@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"phrasetagg/url-shortener/internal/app/handlers"
-	"phrasetagg/url-shortener/internal/app/handlers/api"
 	"phrasetagg/url-shortener/internal/app/models"
 	"phrasetagg/url-shortener/internal/app/storage"
 
@@ -22,11 +21,6 @@ func StartServer() {
 	r.Route("/", func(r chi.Router) {
 		r.Get("/{shortURL}", handlers.GetFullURL(shortener))
 		r.Post("/", handlers.ShortenURL(shortener))
-
-		// /api routes
-		r.Route("/api/", func(r chi.Router) {
-			r.Post("/shorten", api.ShortenURL(shortener))
-		})
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", r))
