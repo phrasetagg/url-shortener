@@ -19,7 +19,7 @@ var (
 func NewShortener(storage storage.Storager) Shortener {
 	baseURL := os.Getenv("BASE_URL")
 
-	lastChar := baseURL[len(baseURL)-3:]
+	lastChar := baseURL[len(baseURL)-1:]
 
 	if baseURL == "" {
 		baseURL = "http://localhost:8080/"
