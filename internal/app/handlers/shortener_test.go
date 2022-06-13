@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"phrasetagg/url-shortener/internal/app/models"
 	"phrasetagg/url-shortener/internal/app/storage"
 	"testing"
@@ -126,6 +127,11 @@ func TestIndex(t *testing.T) {
 				locationHeader: "https://reddit.com",
 			},
 		},
+	}
+
+	err := os.Setenv("BASE_URL", "http://localhost:8080/")
+	if err != nil {
+		return
 	}
 
 	urlStorage := storage.NewURLStorage()

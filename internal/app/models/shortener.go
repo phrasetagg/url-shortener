@@ -1,14 +1,14 @@
 package models
 
 import (
+	"os"
 	"phrasetagg/url-shortener/internal/app/storage"
 )
 
 type Shortener struct {
 	storage storage.Storager
+	baseURL string
 }
-
-const HostURL = "http://localhost:8080/"
 
 var (
 	firstShortURL = "a"
@@ -17,8 +17,15 @@ var (
 )
 
 func NewShortener(storage storage.Storager) Shortener {
+	baseURL := os.Getenv("BASE_URL")
+
+	if baseURL == "" {
+		baseURL = "http://localhost:8080/"
+	}
+
 	return Shortener{
 		storage: storage,
+		baseURL: baseURL,
 	}
 }
 
@@ -39,7 +46,7 @@ func (s Shortener) Shorten(URL string) string {
 		lastShortURL = firstShortURL
 		s.storage.AddItem(shortURL, URL)
 
-		return HostURL + shortURL
+		return s.baseURL + shortURL
 	}
 
 	// Разбиваем последнюю созданную короткую ссылку на коды.
@@ -54,7 +61,7 @@ func (s Shortener) Shorten(URL string) string {
 		lastShortURL = shortURL
 		s.storage.AddItem(shortURL, URL)
 
-		return HostURL + shortURL
+		return s.baseURL + shortURL
 	}
 
 	// Если код НЕ равен коду максимально допустимого символа maxCharCode,
@@ -66,5 +73,5 @@ func (s Shortener) Shorten(URL string) string {
 
 	s.storage.AddItem(shortURL, URL)
 
-	return HostURL + shortURL
+	return s.baseURL + shortURL
 }

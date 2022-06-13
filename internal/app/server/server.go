@@ -8,9 +8,14 @@ import (
 	"phrasetagg/url-shortener/internal/app/models"
 	"phrasetagg/url-shortener/internal/app/storage"
 
+	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
+
+type serverCfg struct {
+	Addr string `env:"SERVER_ADDRESS,required"`
+}
 
 func StartServer() {
 	urlStorage := storage.NewURLStorage()
@@ -29,5 +34,11 @@ func StartServer() {
 		})
 	})
 
-	log.Fatal(http.ListenAndServe(":8080", r))
+	var serverCfg serverCfg
+	err := env.Parse(&serverCfg)
+	if err != nil {
+		panic("config error")
+	}
+
+	log.Fatal(http.ListenAndServe(serverCfg.Addr, r))
 }
