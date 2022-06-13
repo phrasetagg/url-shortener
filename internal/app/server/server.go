@@ -3,19 +3,15 @@ package server
 import (
 	"log"
 	"net/http"
+	"os"
 	"phrasetagg/url-shortener/internal/app/handlers"
 	"phrasetagg/url-shortener/internal/app/handlers/api"
 	"phrasetagg/url-shortener/internal/app/models"
 	"phrasetagg/url-shortener/internal/app/storage"
 
-	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
-
-type serverCfg struct {
-	Addr string `env:"SERVER_ADDRESS,required"`
-}
 
 func StartServer() {
 	urlStorage := storage.NewURLStorage()
@@ -34,11 +30,11 @@ func StartServer() {
 		})
 	})
 
-	var serverCfg serverCfg
-	err := env.Parse(&serverCfg)
-	if err != nil {
-		panic("config error")
+	serveAddr := os.Getenv("SERVER_ADDRESS")
+
+	if serveAddr == "" {
+		serveAddr = "localhost:8080"
 	}
 
-	log.Fatal(http.ListenAndServe(serverCfg.Addr, r))
+	log.Fatal(http.ListenAndServe(serveAddr, r))
 }
