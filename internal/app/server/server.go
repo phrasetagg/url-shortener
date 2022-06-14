@@ -14,7 +14,16 @@ import (
 )
 
 func StartServer() {
-	urlStorage := storage.NewURLStorage()
+	var urlStorage storage.IStorager
+
+	urlsFilePath := os.Getenv("FILE_STORAGE_PATH")
+
+	if urlsFilePath == "" {
+		urlStorage = storage.NewInMemoryURLStorage()
+	} else {
+		urlStorage = storage.NewFileURLStorage(urlsFilePath)
+	}
+
 	shortener := models.NewShortener(urlStorage)
 
 	r := chi.NewRouter()

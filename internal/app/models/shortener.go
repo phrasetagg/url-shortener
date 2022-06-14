@@ -6,7 +6,7 @@ import (
 )
 
 type Shortener struct {
-	storage storage.Storager
+	storage storage.IStorager
 	baseURL string
 }
 
@@ -16,7 +16,7 @@ var (
 	maxCharCode   = rune(122) // Буква z
 )
 
-func NewShortener(storage storage.Storager) Shortener {
+func NewShortener(storage storage.IStorager) Shortener {
 	baseURL := os.Getenv("BASE_URL")
 
 	if baseURL == "" {
@@ -43,15 +43,20 @@ func (s Shortener) GetFullURL(shortURL string) (string, error) {
 func (s Shortener) Shorten(URL string) string {
 	shortURL := ""
 
-	// Если мапа пустая (первый запрос после запуска), то используем в качестве сокращенной ссылки firstShortURL.
+	// Если короткая ссылка генерируется первый раз и при этом в хранилище нет ссылок,
+	// то используем в качестве сокращенной ссылки firstShortURL.
 	// Его же записываем в последнюю созданную сокращенную ссылку lastShortURL.
-	// Добавляем все в мапу.
-	if len(s.storage.GetItems()) == 0 {
+	// Добавляем все в хранилище.
+	if lastShortURL == "" && s.storage.GetLastElementID() == "" {
 		shortURL := firstShortURL
 		lastShortURL = firstShortURL
 		s.storage.AddItem(shortURL, URL)
 
 		return s.baseURL + shortURL
+	}
+
+	if s.storage.GetLastElementID() != "" {
+		lastShortURL = s.storage.GetLastElementID()
 	}
 
 	// Разбиваем последнюю созданную короткую ссылку на коды.
