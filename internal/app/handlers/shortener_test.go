@@ -3,15 +3,14 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"phrasetagg/url-shortener/internal/app/models"
 	"phrasetagg/url-shortener/internal/app/storage"
 	"testing"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestShortenerWithInMemoryStorage(t *testing.T) {
@@ -287,7 +286,9 @@ func TestShortenerWithFileStorage(t *testing.T) {
 	pwd, _ := os.Getwd()
 	filePath := pwd + "/urls.txt"
 
+	os.Remove(filePath)
 	os.Create(filePath)
+
 	defer os.Remove(filePath)
 
 	urlStorage := storage.NewFileURLStorage(filePath)

@@ -179,9 +179,9 @@ func TestShortenURLWithFileStorage(t *testing.T) {
 	}
 
 	pwd, _ := os.Getwd()
-	filePath := pwd + "/urls.txt"
+	filePath := pwd + "/APIurls.txt"
 
-	os.Remove(filePath)
+	os.Create(filePath)
 	defer os.Remove(filePath)
 
 	urlStorage := storage.NewFileURLStorage(filePath)
