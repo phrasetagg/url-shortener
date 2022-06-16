@@ -20,6 +20,7 @@ func StartServer() {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Recoverer)
+	r.Use(middlewares.GzipRequestDecoder())
 	r.Use(middlewares.GzipResponseEncode())
 
 	urlStorage := createURLStorage()
