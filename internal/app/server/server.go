@@ -6,6 +6,7 @@ import (
 	"phrasetagg/url-shortener/internal/app/config"
 	"phrasetagg/url-shortener/internal/app/handlers"
 	"phrasetagg/url-shortener/internal/app/handlers/api"
+	"phrasetagg/url-shortener/internal/app/middlewares"
 	"phrasetagg/url-shortener/internal/app/models"
 	"phrasetagg/url-shortener/internal/app/storage"
 
@@ -16,12 +17,13 @@ import (
 var cfg = config.PrepareCfg()
 
 func StartServer() {
-	urlStorage := createURLStorage()
-
-	shortener := models.NewShortener(urlStorage, cfg.BaseURL)
-
 	r := chi.NewRouter()
+
 	r.Use(middleware.Recoverer)
+	r.Use(middlewares.GzipResponseEncode())
+
+	urlStorage := createURLStorage()
+	shortener := models.NewShortener(urlStorage, cfg.BaseURL)
 
 	r.Route("/", func(r chi.Router) {
 		r.Get("/{shortURL}", handlers.GetFullURL(shortener))

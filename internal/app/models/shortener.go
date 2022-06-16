@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"phrasetagg/url-shortener/internal/app/storage"
 )
 
@@ -30,13 +29,6 @@ func (s Shortener) GetFullURL(shortURL string) (string, error) {
 
 func (s Shortener) Shorten(URL string) string {
 	shortURL := ""
-
-	fmt.Println(s.storage)
-	fmt.Println("FIRST SHORT URL")
-	fmt.Println(s.lastShortURL)
-
-	fmt.Println("LAT ELEMENT")
-	fmt.Println(s.storage.GetLastElementID())
 
 	// Если короткая ссылка генерируется первый раз и при этом в хранилище нет ссылок,
 	// то используем в качестве сокращенной ссылки firstShortURL.
