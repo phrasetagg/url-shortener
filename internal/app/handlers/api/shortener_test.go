@@ -75,13 +75,8 @@ func TestShortenURLWithInMemoryStorage(t *testing.T) {
 		},
 	}
 
-	err := os.Setenv("BASE_URL", "http://localhost:8080/")
-	if err != nil {
-		return
-	}
-
 	urlStorage := storage.NewInMemoryURLStorage()
-	shortener := models.NewShortener(urlStorage)
+	shortener := models.NewShortener(urlStorage, "http://localhost:8080/")
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -183,11 +178,6 @@ func TestShortenURLWithFileStorage(t *testing.T) {
 		},
 	}
 
-	err := os.Setenv("BASE_URL", "http://localhost:8080/")
-	if err != nil {
-		return
-	}
-
 	pwd, _ := os.Getwd()
 	filePath := pwd + "/urls.txt"
 
@@ -195,7 +185,7 @@ func TestShortenURLWithFileStorage(t *testing.T) {
 	defer os.Remove(filePath)
 
 	urlStorage := storage.NewFileURLStorage(filePath)
-	shortener := models.NewShortener(urlStorage)
+	shortener := models.NewShortener(urlStorage, "http://localhost:8080/")
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

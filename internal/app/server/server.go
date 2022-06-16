@@ -3,7 +3,7 @@ package server
 import (
 	"log"
 	"net/http"
-	"os"
+	"phrasetagg/url-shortener/internal/app/config"
 	"phrasetagg/url-shortener/internal/app/handlers"
 	"phrasetagg/url-shortener/internal/app/handlers/api"
 	"phrasetagg/url-shortener/internal/app/models"
@@ -13,18 +13,12 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+var cfg = config.PrepareCfg()
+
 func StartServer() {
-	var urlStorage storage.IStorager
+	urlStorage := createURLStorage()
 
-	urlsFilePath := os.Getenv("FILE_STORAGE_PATH")
-
-	if urlsFilePath == "" {
-		urlStorage = storage.NewInMemoryURLStorage()
-	} else {
-		urlStorage = storage.NewFileURLStorage(urlsFilePath)
-	}
-
-	shortener := models.NewShortener(urlStorage)
+	shortener := models.NewShortener(urlStorage, cfg.BaseURL)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
@@ -39,11 +33,17 @@ func StartServer() {
 		})
 	})
 
-	serveAddr := os.Getenv("SERVER_ADDRESS")
+	log.Fatal(http.ListenAndServe(cfg.ServerAddr, r))
+}
 
-	if serveAddr == "" {
-		serveAddr = "localhost:8080"
+func createURLStorage() storage.IStorager {
+	var urlStorage storage.IStorager
+
+	if cfg.FileStoragePath == "" {
+		urlStorage = storage.NewInMemoryURLStorage()
+	} else {
+		urlStorage = storage.NewFileURLStorage(cfg.FileStoragePath)
 	}
 
-	log.Fatal(http.ListenAndServe(serveAddr, r))
+	return urlStorage
 }

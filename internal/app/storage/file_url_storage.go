@@ -21,7 +21,7 @@ func NewFileURLStorage(filePath string) *FileURLStorage {
 	}
 }
 
-func (s FileURLStorage) GetItem(itemID string) (string, error) {
+func (s *FileURLStorage) GetItem(itemID string) (string, error) {
 	file, err := os.OpenFile(s.filePath, os.O_RDONLY|os.O_CREATE, 0777)
 	if err != nil {
 		return "", err

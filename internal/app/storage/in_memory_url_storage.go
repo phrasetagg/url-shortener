@@ -17,7 +17,7 @@ func NewInMemoryURLStorage() *InMemoryURLStorage {
 	}
 }
 
-func (s InMemoryURLStorage) GetItem(itemID string) (string, error) {
+func (s *InMemoryURLStorage) GetItem(itemID string) (string, error) {
 	s.mutex.RLock()
 	item, ok := s.urls[itemID]
 	s.mutex.RUnlock()

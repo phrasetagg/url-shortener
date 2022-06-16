@@ -1,7 +1,6 @@
 package models
 
 import (
-	"os"
 	"phrasetagg/url-shortener/internal/app/storage"
 )
 
@@ -16,18 +15,7 @@ var (
 	maxCharCode   = rune(122) // Буква z
 )
 
-func NewShortener(storage storage.IStorager) Shortener {
-	baseURL := os.Getenv("BASE_URL")
-
-	if baseURL == "" {
-		baseURL = "http://localhost:8080/"
-	}
-
-	lastChar := baseURL[len(baseURL)-1:]
-	if lastChar != "/" {
-		baseURL = baseURL + "/"
-	}
-
+func NewShortener(storage storage.IStorager, baseURL string) Shortener {
 	return Shortener{
 		storage: storage,
 		baseURL: baseURL,
