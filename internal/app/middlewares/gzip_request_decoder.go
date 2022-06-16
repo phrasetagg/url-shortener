@@ -25,7 +25,12 @@ func GzipRequestDecoder() func(next http.Handler) http.Handler {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			defer gzReader.Close()
+			defer func(gzReader *gzip.Reader) {
+				err := gzReader.Close()
+				if err != nil {
+					return
+				}
+			}(gzReader)
 
 			r.Body = gzReader
 

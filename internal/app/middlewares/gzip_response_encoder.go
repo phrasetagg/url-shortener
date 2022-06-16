@@ -26,10 +26,20 @@ func GzipResponseEncode() func(next http.Handler) http.Handler {
 
 			gzWriter, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 			if err != nil {
-				io.WriteString(w, err.Error())
+				_, err := io.WriteString(w, err.Error())
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
 				return
 			}
-			defer gzWriter.Close()
+
+			defer func(gzWriter *gzip.Writer) {
+				err := gzWriter.Close()
+				if err != nil {
+					return
+				}
+			}(gzWriter)
 
 			w.Header().Set("Content-Encoding", "gzip")
 			next.ServeHTTP(gzipWriter{ResponseWriter: w, Writer: gzWriter}, r)
