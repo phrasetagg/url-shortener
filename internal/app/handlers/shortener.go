@@ -34,6 +34,15 @@ func GetFullURL(shortener models.Shortener) http.HandlerFunc {
 
 func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		rawUserID := r.Context().Value("userID")
+		var userID uint64
+
+		switch uidType := rawUserID.(type) {
+		case uint64:
+			userID = uidType
+		}
+
 		b, _ := io.ReadAll(r.Body)
 
 		URL := string(b)
@@ -43,7 +52,7 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 			return
 		}
 
-		res := shortener.Shorten(URL)
+		res := shortener.Shorten(userID, URL)
 
 		w.WriteHeader(http.StatusCreated)
 		_, err := w.Write([]byte(res))

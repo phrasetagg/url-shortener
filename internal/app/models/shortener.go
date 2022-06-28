@@ -27,7 +27,7 @@ func (s Shortener) GetFullURL(shortURL string) (string, error) {
 	return fullURL, err
 }
 
-func (s Shortener) Shorten(URL string) string {
+func (s Shortener) Shorten(userID uint64, URL string) string {
 	shortURL := ""
 
 	// Если короткая ссылка генерируется первый раз и при этом в хранилище нет ссылок,
@@ -37,7 +37,7 @@ func (s Shortener) Shorten(URL string) string {
 	if s.lastShortURL == "" && s.storage.GetLastElementID() == "" {
 		shortURL := s.firstShortURL
 		s.lastShortURL = s.firstShortURL
-		s.storage.AddItem(shortURL, URL)
+		s.storage.AddItem(shortURL, URL, userID)
 
 		return s.baseURL + shortURL
 	}
@@ -56,7 +56,7 @@ func (s Shortener) Shorten(URL string) string {
 	if lastCharCode == s.maxCharCode {
 		shortURL = s.lastShortURL + s.firstShortURL
 		s.lastShortURL = shortURL
-		s.storage.AddItem(shortURL, URL)
+		s.storage.AddItem(shortURL, URL, userID)
 
 		return s.baseURL + shortURL
 	}
@@ -68,7 +68,7 @@ func (s Shortener) Shorten(URL string) string {
 	shortURL = string(shortURLRune)
 	s.lastShortURL = shortURL
 
-	s.storage.AddItem(shortURL, URL)
+	s.storage.AddItem(shortURL, URL, userID)
 
 	return s.baseURL + shortURL
 }

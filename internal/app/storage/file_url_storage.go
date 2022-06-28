@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -55,7 +56,7 @@ func (s *FileURLStorage) GetItem(itemID string) (string, error) {
 	return "", errors.New("not found")
 }
 
-func (s *FileURLStorage) AddItem(itemID string, value string) {
+func (s *FileURLStorage) AddItem(itemID string, value string, userID uint64) {
 	file, err := os.OpenFile(s.filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
 	if err != nil {
 		return
@@ -70,7 +71,7 @@ func (s *FileURLStorage) AddItem(itemID string, value string) {
 
 	writer := bufio.NewWriter(file)
 
-	_, err = writer.WriteString(itemID + " " + value + "\n")
+	_, err = writer.WriteString(itemID + " " + value + " " + strconv.FormatUint(userID, 10) + "\n")
 	if err != nil {
 		return
 	}
@@ -106,4 +107,41 @@ func (s FileURLStorage) GetLastElementID() string {
 	}
 
 	return strings.Split(row, " ")[0]
+}
+
+func (s FileURLStorage) GetItemsByUserID(userID uint64) []UserURLs {
+
+	var userURLs []UserURLs
+
+	file, err := os.OpenFile(s.filePath, os.O_RDONLY|os.O_CREATE, 0777)
+	if err != nil {
+		return userURLs
+	}
+
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			return
+		}
+	}(file)
+
+	reader := bufio.NewReader(file)
+
+	for {
+		item, err := reader.ReadBytes('\n')
+
+		row := string(item)
+		row = strings.Trim(row, "\n")
+		res := strings.Split(row, " ")
+
+		if err == nil && res[2] == strconv.FormatUint(userID, 10) {
+			userURLs = append(userURLs, UserURLs{ShortURL: res[0], URL: res[1]})
+		}
+
+		if err == io.EOF {
+			break
+		}
+	}
+
+	return userURLs
 }

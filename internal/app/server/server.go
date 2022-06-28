@@ -22,6 +22,7 @@ func StartServer() {
 	r.Use(middleware.Recoverer)
 	r.Use(middlewares.GzipRequestDecoder())
 	r.Use(middlewares.GzipResponseEncode())
+	r.Use(middlewares.GenerateAuthToken())
 
 	urlStorage := createURLStorage()
 	shortener := models.NewShortener(urlStorage, cfg.BaseURL)
@@ -32,6 +33,7 @@ func StartServer() {
 
 		// /api routes
 		r.Route("/api/", func(r chi.Router) {
+			r.Get("/user/urls", api.GetUserURLs(urlStorage))
 			r.Post("/shorten", api.ShortenURL(shortener))
 		})
 	})

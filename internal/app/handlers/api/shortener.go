@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"phrasetagg/url-shortener/internal/app/models"
+	"phrasetagg/url-shortener/internal/app/storage"
 )
 
 func ShortenURL(shortener models.Shortener) http.HandlerFunc {
@@ -17,6 +18,14 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		rawUserID := r.Context().Value("userID")
+		var userID uint64
+
+		switch uidType := rawUserID.(type) {
+		case uint64:
+			userID = uidType
+		}
+
 		b, _ := io.ReadAll(r.Body)
 
 		var request request
@@ -32,7 +41,7 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 			return
 		}
 
-		shortURL := shortener.Shorten(request.URL)
+		shortURL := shortener.Shorten(userID, request.URL)
 
 		response := response{Result: shortURL}
 
@@ -42,6 +51,35 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 		responseBytes, _ := json.Marshal(response)
 
 		_, err = w.Write(responseBytes)
+		if err != nil {
+			return
+		}
+	}
+}
+
+func GetUserURLs(storage storage.IStorager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("content-type", "application/json")
+
+		rawUserID := r.Context().Value("userID")
+		var userID uint64
+
+		switch uidType := rawUserID.(type) {
+		case uint64:
+			userID = uidType
+		}
+
+		userURLs := storage.GetItemsByUserID(userID)
+		responseBytes, _ := json.Marshal(userURLs)
+
+		if len(userURLs) == 0 {
+			w.WriteHeader(http.StatusNoContent)
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
+
+		_, err := w.Write(responseBytes)
 		if err != nil {
 			return
 		}
