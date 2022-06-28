@@ -1,7 +1,7 @@
 package storage
 
-type Storager interface {
+type IStorager interface {
 	GetItem(itemID string) (string, error)
 	AddItem(itemID string, value string)
-	GetItems() map[string]string
+	GetLastElementID() string
 }

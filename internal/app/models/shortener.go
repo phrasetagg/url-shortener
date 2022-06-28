@@ -5,20 +5,19 @@ import (
 )
 
 type Shortener struct {
-	storage storage.Storager
+	storage       storage.IStorager
+	baseURL       string
+	firstShortURL string
+	lastShortURL  string
+	maxCharCode   rune
 }
 
-const HostURL = "http://localhost:8080/"
-
-var (
-	firstShortURL = "a"
-	lastShortURL  string
-	maxCharCode   = rune(122) // Буква z
-)
-
-func NewShortener(storage storage.Storager) Shortener {
+func NewShortener(storage storage.IStorager, baseURL string) Shortener {
 	return Shortener{
-		storage: storage,
+		storage:       storage,
+		baseURL:       baseURL,
+		firstShortURL: "a",
+		maxCharCode:   rune(122), // Буква z
 	}
 }
 
@@ -31,30 +30,35 @@ func (s Shortener) GetFullURL(shortURL string) (string, error) {
 func (s Shortener) Shorten(URL string) string {
 	shortURL := ""
 
-	// Если мапа пустая (первый запрос после запуска), то используем в качестве сокращенной ссылки firstShortURL.
+	// Если короткая ссылка генерируется первый раз и при этом в хранилище нет ссылок,
+	// то используем в качестве сокращенной ссылки firstShortURL.
 	// Его же записываем в последнюю созданную сокращенную ссылку lastShortURL.
-	// Добавляем все в мапу.
-	if len(s.storage.GetItems()) == 0 {
-		shortURL := firstShortURL
-		lastShortURL = firstShortURL
+	// Добавляем все в хранилище.
+	if s.lastShortURL == "" && s.storage.GetLastElementID() == "" {
+		shortURL := s.firstShortURL
+		s.lastShortURL = s.firstShortURL
 		s.storage.AddItem(shortURL, URL)
 
-		return HostURL + shortURL
+		return s.baseURL + shortURL
+	}
+
+	if s.storage.GetLastElementID() != "" {
+		s.lastShortURL = s.storage.GetLastElementID()
 	}
 
 	// Разбиваем последнюю созданную короткую ссылку на коды.
-	shortURLRune := []rune(lastShortURL)
+	shortURLRune := []rune(s.lastShortURL)
 	// Получаем код последнего символа короткой ссылки.
 	lastCharCode := shortURLRune[len(shortURLRune)-1]
 
 	// Если этот код равен коду максимально допустимого символа maxCharCode,
 	// то конкатинируем в конец короткой ссылки символ firstShortURL.
-	if lastCharCode == maxCharCode {
-		shortURL = lastShortURL + firstShortURL
-		lastShortURL = shortURL
+	if lastCharCode == s.maxCharCode {
+		shortURL = s.lastShortURL + s.firstShortURL
+		s.lastShortURL = shortURL
 		s.storage.AddItem(shortURL, URL)
 
-		return HostURL + shortURL
+		return s.baseURL + shortURL
 	}
 
 	// Если код НЕ равен коду максимально допустимого символа maxCharCode,
@@ -62,9 +66,9 @@ func (s Shortener) Shorten(URL string) string {
 	shortURLRune[len(shortURLRune)-1] = shortURLRune[len(shortURLRune)-1] + 1
 	// Приводим к строке.
 	shortURL = string(shortURLRune)
-	lastShortURL = shortURL
+	s.lastShortURL = shortURL
 
 	s.storage.AddItem(shortURL, URL)
 
-	return HostURL + shortURL
+	return s.baseURL + shortURL
 }
