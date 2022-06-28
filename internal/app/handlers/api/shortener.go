@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"phrasetagg/url-shortener/internal/app/models"
-	"phrasetagg/url-shortener/internal/app/storage"
 )
 
 func ShortenURL(shortener models.Shortener) http.HandlerFunc {
@@ -57,7 +56,7 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 	}
 }
 
-func GetUserURLs(storage storage.IStorager) http.HandlerFunc {
+func GetUserURLs(shortener models.Shortener) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("content-type", "application/json")
@@ -70,7 +69,7 @@ func GetUserURLs(storage storage.IStorager) http.HandlerFunc {
 			userID = uidType
 		}
 
-		userURLs := storage.GetItemsByUserID(userID)
+		userURLs := shortener.GetUserURLs(userID)
 		responseBytes, _ := json.Marshal(userURLs)
 
 		if len(userURLs) == 0 {

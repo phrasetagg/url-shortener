@@ -72,3 +72,15 @@ func (s Shortener) Shorten(userID uint64, URL string) string {
 
 	return s.baseURL + shortURL
 }
+
+func (s Shortener) GetUserURLs(userID uint64) []storage.UserURLs {
+	var preparedUserURLs []storage.UserURLs
+
+	userURLs := s.storage.GetItemsByUserID(userID)
+
+	for _, value := range userURLs {
+		preparedUserURLs = append(preparedUserURLs, storage.UserURLs{ShortURL: s.baseURL + value.ShortURL, URL: value.URL})
+	}
+
+	return preparedUserURLs
+}
