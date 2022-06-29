@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"phrasetagg/url-shortener/internal/app/middlewares"
 	"phrasetagg/url-shortener/internal/app/models"
 )
 
@@ -17,7 +18,7 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		rawUserID := r.Context().Value("userID")
+		rawUserID := r.Context().Value(middlewares.UserID)
 		var userID uint64
 
 		switch uidType := rawUserID.(type) {
@@ -61,7 +62,7 @@ func GetUserURLs(shortener models.Shortener) http.HandlerFunc {
 
 		w.Header().Set("content-type", "application/json")
 
-		rawUserID := r.Context().Value("userID")
+		rawUserID := r.Context().Value(middlewares.UserID)
 		var userID uint64
 
 		switch uidType := rawUserID.(type) {

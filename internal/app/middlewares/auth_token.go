@@ -15,6 +15,10 @@ import (
 const authTokenName = "AuthToken"
 const secretKey = "my perfect project"
 
+type userID string
+
+const UserID userID = "userID"
+
 func GenerateAuthToken() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +41,7 @@ func GenerateAuthToken() func(next http.Handler) http.Handler {
 					})
 			}
 
-			r = r.WithContext(context.WithValue(r.Context(), "userID", getUserIDFromAuthToken(authToken)))
+			r = r.WithContext(context.WithValue(r.Context(), UserID, getUserIDFromAuthToken(authToken)))
 
 			next.ServeHTTP(w, r)
 		}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"io"
 	"net/http"
+	"phrasetagg/url-shortener/internal/app/middlewares"
 	"phrasetagg/url-shortener/internal/app/models"
 
 	"github.com/go-chi/chi/v5"
@@ -35,7 +36,7 @@ func GetFullURL(shortener models.Shortener) http.HandlerFunc {
 func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		rawUserID := r.Context().Value("userID")
+		rawUserID := r.Context().Value(middlewares.UserID)
 		var userID uint64
 
 		switch uidType := rawUserID.(type) {
