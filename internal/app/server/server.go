@@ -24,10 +24,13 @@ func StartServer() {
 	r.Use(middlewares.GzipResponseEncode())
 	r.Use(middlewares.GenerateAuthToken())
 
+	db := models.NewDB(cfg.DBDsn)
 	urlStorage := createURLStorage()
 	shortener := models.NewShortener(urlStorage, cfg.BaseURL)
 
 	r.Route("/", func(r chi.Router) {
+		r.Get("/ping", handlers.Ping(db))
+
 		r.Get("/{shortURL}", handlers.GetFullURL(shortener))
 		r.Post("/", handlers.ShortenURL(shortener))
 
