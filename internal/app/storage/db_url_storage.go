@@ -18,7 +18,7 @@ func NewDBURLStorage(db *db.DB) *DBURLStorage {
 }
 
 func (d *DBURLStorage) GetItem(itemID string) (string, error) {
-	var originalUrl string
+	var originalURL string
 
 	conn, err := d.db.GetConn(context.Background())
 	if err != nil {
@@ -27,16 +27,16 @@ func (d *DBURLStorage) GetItem(itemID string) (string, error) {
 
 	defer d.db.Close()
 
-	err = conn.QueryRow(context.Background(), "SELECT original_url FROM urls WHERE short_url = $1 LIMIT 1", itemID).Scan(&originalUrl)
+	err = conn.QueryRow(context.Background(), "SELECT original_url FROM urls WHERE short_url = $1 LIMIT 1", itemID).Scan(&originalURL)
 	if err != nil {
 		panic(err)
 	}
 
-	if originalUrl == "" {
+	if originalURL == "" {
 		return "", errors.New("not found")
 	}
 
-	return originalUrl, nil
+	return originalURL, nil
 }
 
 func (d *DBURLStorage) AddItem(itemID string, value string, userID uint32) {
