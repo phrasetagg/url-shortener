@@ -37,10 +37,10 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		rawUserID := r.Context().Value(middlewares.UserID)
-		var userID uint64
+		var userID uint32
 
 		switch uidType := rawUserID.(type) {
-		case uint64:
+		case uint32:
 			userID = uidType
 		}
 

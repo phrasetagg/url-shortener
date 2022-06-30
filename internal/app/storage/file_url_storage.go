@@ -3,9 +3,9 @@ package storage
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 )
@@ -56,7 +56,7 @@ func (s *FileURLStorage) GetItem(itemID string) (string, error) {
 	return "", errors.New("not found")
 }
 
-func (s *FileURLStorage) AddItem(itemID string, value string, userID uint64) {
+func (s *FileURLStorage) AddItem(itemID string, value string, userID uint32) {
 	file, err := os.OpenFile(s.filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
 	if err != nil {
 		return
@@ -71,7 +71,7 @@ func (s *FileURLStorage) AddItem(itemID string, value string, userID uint64) {
 
 	writer := bufio.NewWriter(file)
 
-	_, err = writer.WriteString(itemID + " " + value + " " + strconv.FormatUint(userID, 10) + "\n")
+	_, err = writer.WriteString(itemID + " " + value + " " + fmt.Sprint(userID) + "\n")
 	if err != nil {
 		return
 	}
@@ -109,7 +109,7 @@ func (s FileURLStorage) GetLastElementID() string {
 	return strings.Split(row, " ")[0]
 }
 
-func (s FileURLStorage) GetItemsByUserID(userID uint64) []UserURLs {
+func (s FileURLStorage) GetItemsByUserID(userID uint32) []UserURLs {
 
 	var userURLs []UserURLs
 
@@ -134,7 +134,7 @@ func (s FileURLStorage) GetItemsByUserID(userID uint64) []UserURLs {
 		row = strings.Trim(row, "\n")
 		res := strings.Split(row, " ")
 
-		if err == nil && res[2] == strconv.FormatUint(userID, 10) {
+		if err == nil && res[2] == fmt.Sprint(userID) {
 			userURLs = append(userURLs, UserURLs{ShortURL: res[0], URL: res[1]})
 		}
 

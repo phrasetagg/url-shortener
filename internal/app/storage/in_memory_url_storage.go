@@ -11,7 +11,7 @@ type InMemoryURLStorage struct {
 }
 
 type URLItem struct {
-	userID uint64
+	userID uint32
 	url    string
 }
 
@@ -39,7 +39,7 @@ func (s *InMemoryURLStorage) GetItem(itemID string) (string, error) {
 	return urlItem.url, nil
 }
 
-func (s *InMemoryURLStorage) AddItem(itemID string, value string, userID uint64) {
+func (s *InMemoryURLStorage) AddItem(itemID string, value string, userID uint32) {
 	s.mutex.Lock()
 	s.urls[itemID] = URLItem{url: value, userID: userID}
 	s.mutex.Unlock()
@@ -57,7 +57,7 @@ func (s InMemoryURLStorage) GetLastElementID() string {
 	return shortURL
 }
 
-func (s InMemoryURLStorage) GetItemsByUserID(userID uint64) []UserURLs {
+func (s InMemoryURLStorage) GetItemsByUserID(userID uint32) []UserURLs {
 	var userURLs []UserURLs
 
 	for key, value := range s.urls {

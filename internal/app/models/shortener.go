@@ -27,7 +27,7 @@ func (s Shortener) GetFullURL(shortURL string) (string, error) {
 	return fullURL, err
 }
 
-func (s Shortener) Shorten(userID uint64, URL string) string {
+func (s Shortener) Shorten(userID uint32, URL string) string {
 	shortURL := ""
 
 	// Если короткая ссылка генерируется первый раз и при этом в хранилище нет ссылок,
@@ -73,7 +73,7 @@ func (s Shortener) Shorten(userID uint64, URL string) string {
 	return s.baseURL + shortURL
 }
 
-func (s Shortener) GetUserURLs(userID uint64) []storage.UserURLs {
+func (s Shortener) GetUserURLs(userID uint32) []storage.UserURLs {
 	var preparedUserURLs []storage.UserURLs
 
 	userURLs := s.storage.GetItemsByUserID(userID)

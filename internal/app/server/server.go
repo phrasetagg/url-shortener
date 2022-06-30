@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"phrasetagg/url-shortener/internal/app/config"
+	"phrasetagg/url-shortener/internal/app/db"
 	"phrasetagg/url-shortener/internal/app/handlers"
 	"phrasetagg/url-shortener/internal/app/handlers/api"
 	"phrasetagg/url-shortener/internal/app/middlewares"
@@ -24,12 +25,19 @@ func StartServer() {
 	r.Use(middlewares.GzipResponseEncode())
 	r.Use(middlewares.GenerateAuthToken())
 
-	db := models.NewDB(cfg.DBDsn)
-	urlStorage := createURLStorage()
+	var DB db.DB
+	var dbModel = &DB
+
+	if cfg.DBDsn != "" {
+		dbModel = db.NewDB(cfg.DBDsn)
+		dbModel.CreateTables()
+	}
+
+	urlStorage := createURLStorage(dbModel)
 	shortener := models.NewShortener(urlStorage, cfg.BaseURL)
 
 	r.Route("/", func(r chi.Router) {
-		r.Get("/ping", handlers.Ping(db))
+		r.Get("/ping", handlers.Ping(dbModel))
 
 		r.Get("/{shortURL}", handlers.GetFullURL(shortener))
 		r.Post("/", handlers.ShortenURL(shortener))
@@ -44,14 +52,14 @@ func StartServer() {
 	log.Fatal(http.ListenAndServe(cfg.ServerAddr, r))
 }
 
-func createURLStorage() storage.IStorager {
-	var urlStorage storage.IStorager
-
-	if cfg.FileStoragePath == "" {
-		urlStorage = storage.NewInMemoryURLStorage()
-	} else {
-		urlStorage = storage.NewFileURLStorage(cfg.FileStoragePath)
+func createURLStorage(db *db.DB) storage.IStorager {
+	if cfg.DBDsn != "" {
+		return storage.NewDBURLStorage(db)
 	}
 
-	return urlStorage
+	if cfg.FileStoragePath == "" {
+		return storage.NewInMemoryURLStorage()
+	}
+
+	return storage.NewFileURLStorage(cfg.FileStoragePath)
 }

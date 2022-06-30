@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"net/http"
-	"phrasetagg/url-shortener/internal/app/models"
+	"phrasetagg/url-shortener/internal/app/db"
 )
 
-func Ping(db *models.DB) http.HandlerFunc {
+func Ping(db *db.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer db.Close()
 
