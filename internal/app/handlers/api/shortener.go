@@ -8,6 +8,35 @@ import (
 	"phrasetagg/url-shortener/internal/app/models"
 )
 
+func GetUserURLs(shortener models.Shortener) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("content-type", "application/json")
+
+		rawUserID := r.Context().Value(middlewares.UserID)
+		var userID uint32
+
+		switch uidType := rawUserID.(type) {
+		case uint32:
+			userID = uidType
+		}
+
+		userURLs := shortener.GetUserURLs(userID)
+		responseBytes, _ := json.Marshal(userURLs)
+
+		if len(userURLs) == 0 {
+			w.WriteHeader(http.StatusNoContent)
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
+
+		_, err := w.Write(responseBytes)
+		if err != nil {
+			return
+		}
+	}
+}
+
 func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 	type request struct {
 		URL string `json:"url"`
@@ -57,10 +86,20 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 	}
 }
 
-func GetUserURLs(shortener models.Shortener) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func ShortenURLBatch(shortener models.Shortener) http.HandlerFunc {
+	type dataToShorten struct {
+		CorrelationID string `json:"correlation_id"`
+		OriginalURL   string `json:"original_url"`
+	}
 
-		w.Header().Set("content-type", "application/json")
+	type resultData struct {
+		CorrelationID string `json:"correlation_id"`
+		ShortURL      string `json:"short_url"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		var request []dataToShorten
+		var result []resultData
 
 		rawUserID := r.Context().Value(middlewares.UserID)
 		var userID uint32
@@ -70,16 +109,30 @@ func GetUserURLs(shortener models.Shortener) http.HandlerFunc {
 			userID = uidType
 		}
 
-		userURLs := shortener.GetUserURLs(userID)
-		responseBytes, _ := json.Marshal(userURLs)
+		b, _ := io.ReadAll(r.Body)
+		err := json.Unmarshal(b, &request)
 
-		if len(userURLs) == 0 {
-			w.WriteHeader(http.StatusNoContent)
-		} else {
-			w.WriteHeader(http.StatusOK)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 
-		_, err := w.Write(responseBytes)
+		if len(request) == 0 {
+			http.Error(w, `{"error":"URLs in body are required"}`, http.StatusBadRequest)
+			return
+		}
+
+		for _, data := range request {
+			shortURL := shortener.Shorten(userID, data.OriginalURL)
+			result = append(result, resultData{CorrelationID: data.CorrelationID, ShortURL: shortURL})
+		}
+
+		w.Header().Set("content-type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+
+		responseBytes, _ := json.Marshal(result)
+
+		_, err = w.Write(responseBytes)
 		if err != nil {
 			return
 		}
