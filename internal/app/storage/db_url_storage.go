@@ -50,7 +50,7 @@ func (s *DBURLStorage) GetOriginalURLByShortURI(itemID string) (string, error) {
 
 	defer s.db.Close()
 
-	err = conn.QueryRow(context.Background(), "SELECT original_url FROM urls WHERE short_url = $1 LIMIT 1", itemID).Scan(&originalURL)
+	err = conn.QueryRow(context.Background(), "SELECT original_url FROM urls WHERE short_uri = $1 LIMIT 1", itemID).Scan(&originalURL)
 	if err != nil {
 		panic(err)
 	}

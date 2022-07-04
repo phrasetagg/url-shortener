@@ -85,7 +85,7 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 		} else {
 			w.WriteHeader(http.StatusCreated)
 		}
-		if err != nil {
+		if err != nil && !errors.As(err, &iae) {
 			http.Error(w, `{"error":"Something went wrong"}`, http.StatusInternalServerError)
 			return
 		}
