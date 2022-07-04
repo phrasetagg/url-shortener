@@ -2,6 +2,7 @@ package server
 
 import (
 	"log"
+	"math/rand"
 	"net/http"
 	"phrasetagg/url-shortener/internal/app/config"
 	"phrasetagg/url-shortener/internal/app/db"
@@ -10,6 +11,7 @@ import (
 	"phrasetagg/url-shortener/internal/app/middlewares"
 	"phrasetagg/url-shortener/internal/app/models"
 	"phrasetagg/url-shortener/internal/app/storage"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -18,6 +20,8 @@ import (
 var cfg = config.PrepareCfg()
 
 func StartServer() {
+	rand.Seed(time.Now().UnixNano())
+
 	r := chi.NewRouter()
 
 	r.Use(middleware.Recoverer)
@@ -53,7 +57,7 @@ func StartServer() {
 	log.Fatal(http.ListenAndServe(cfg.ServerAddr, r))
 }
 
-func createURLStorage(db *db.DB) storage.IStorager {
+func createURLStorage(db *db.DB) storage.IURLStorager {
 	if cfg.DBDsn != "" {
 		return storage.NewDBURLStorage(db)
 	}

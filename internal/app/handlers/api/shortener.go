@@ -2,10 +2,12 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"phrasetagg/url-shortener/internal/app/middlewares"
 	"phrasetagg/url-shortener/internal/app/models"
+	"phrasetagg/url-shortener/internal/app/storage"
 )
 
 func GetUserURLs(shortener models.Shortener) http.HandlerFunc {
@@ -47,6 +49,8 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+
 		rawUserID := r.Context().Value(middlewares.UserID)
 		var userID uint32
 
@@ -62,6 +66,7 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 		err := json.Unmarshal(b, &request)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
+			http.Error(w, `{"error":"URL in body is required"}`, http.StatusBadRequest)
 			return
 		}
 
@@ -70,12 +75,20 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 			return
 		}
 
-		shortURL := shortener.Shorten(userID, request.URL)
-
+		shortURL, shortenErr := shortener.Shorten(userID, request.URL)
 		response := response{Result: shortURL}
 
-		w.Header().Set("content-type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		var iae *storage.ItemAlreadyExistsError
+
+		if errors.As(shortenErr, &iae) {
+			w.WriteHeader(http.StatusConflict)
+		} else {
+			w.WriteHeader(http.StatusCreated)
+		}
+		if err != nil {
+			http.Error(w, `{"error":"Something went wrong"}`, http.StatusInternalServerError)
+			return
+		}
 
 		responseBytes, _ := json.Marshal(response)
 
@@ -98,6 +111,8 @@ func ShortenURLBatch(shortener models.Shortener) http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+
 		var request []dataToShorten
 		var result []resultData
 
@@ -114,6 +129,7 @@ func ShortenURLBatch(shortener models.Shortener) http.HandlerFunc {
 
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
+			http.Error(w, `{"error":"URLs in body are required"}`, http.StatusBadRequest)
 			return
 		}
 
@@ -122,13 +138,26 @@ func ShortenURLBatch(shortener models.Shortener) http.HandlerFunc {
 			return
 		}
 
+		var shortenError error
+
 		for _, data := range request {
-			shortURL := shortener.Shorten(userID, data.OriginalURL)
+			var shortURL string
+			shortURL, shortenError = shortener.Shorten(userID, data.OriginalURL)
+
 			result = append(result, resultData{CorrelationID: data.CorrelationID, ShortURL: shortURL})
 		}
 
-		w.Header().Set("content-type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		var iae *storage.ItemAlreadyExistsError
+		if errors.As(shortenError, &iae) {
+			w.WriteHeader(http.StatusConflict)
+		} else {
+			w.WriteHeader(http.StatusCreated)
+		}
+
+		if shortenError != nil && !errors.As(shortenError, &iae) {
+			http.Error(w, `{"error":"Something went wrong"}`, http.StatusInternalServerError)
+			return
+		}
 
 		responseBytes, _ := json.Marshal(result)
 

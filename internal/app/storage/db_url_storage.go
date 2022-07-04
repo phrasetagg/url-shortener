@@ -3,7 +3,9 @@ package storage
 import (
 	"context"
 	"errors"
+	"github.com/jackc/pgerrcode"
 	"phrasetagg/url-shortener/internal/app/db"
+	"strings"
 	"time"
 )
 
@@ -17,15 +19,36 @@ func NewDBURLStorage(db *db.DB) *DBURLStorage {
 	}
 }
 
-func (d *DBURLStorage) GetItem(itemID string) (string, error) {
+func (s *DBURLStorage) AddRecord(itemID string, value string, userID uint32) error {
+	conn, err := s.db.GetConn(context.Background())
+	if err != nil {
+		panic(err)
+	}
+
+	defer s.db.Close()
+
+	_, err = conn.Exec(context.Background(), "INSERT INTO urls (short_uri, original_url, user_id, created_at) VALUES ($1,$2,$3,$4)", itemID, value, userID, time.Now())
+
+	if err != nil && strings.Contains(err.Error(), pgerrcode.UniqueViolation) {
+		return &ItemAlreadyExistsError{value: value}
+	}
+
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
+}
+
+func (s *DBURLStorage) GetOriginalURLByShortURI(itemID string) (string, error) {
 	var originalURL string
 
-	conn, err := d.db.GetConn(context.Background())
+	conn, err := s.db.GetConn(context.Background())
 	if err != nil {
 		return "", err
 	}
 
-	defer d.db.Close()
+	defer s.db.Close()
 
 	err = conn.QueryRow(context.Background(), "SELECT original_url FROM urls WHERE short_url = $1 LIMIT 1", itemID).Scan(&originalURL)
 	if err != nil {
@@ -39,52 +62,37 @@ func (d *DBURLStorage) GetItem(itemID string) (string, error) {
 	return originalURL, nil
 }
 
-func (d *DBURLStorage) AddItem(itemID string, value string, userID uint32) {
-	conn, err := d.db.GetConn(context.Background())
+func (s DBURLStorage) GetShortURIByOriginalURL(originalURL string) (string, error) {
+	var shortURI string
+
+	conn, err := s.db.GetConn(context.Background())
+	if err != nil {
+		return "", err
+	}
+
+	defer s.db.Close()
+
+	err = conn.QueryRow(context.Background(), "SELECT short_uri FROM urls WHERE original_url = $1 LIMIT 1", originalURL).Scan(&shortURI)
 	if err != nil {
 		panic(err)
 	}
 
-	defer d.db.Close()
-
-	_, err = conn.Exec(context.Background(), "INSERT INTO urls (short_url, original_url, user_id, created_at) VALUES ($1,$2,$3,$4)", itemID, value, userID, time.Now())
-	if err != nil {
-		panic(err)
+	if shortURI == "" {
+		return "", errors.New("not found")
 	}
+
+	return shortURI, nil
 }
 
-func (d DBURLStorage) GetLastElementID() string {
-	var lastElementID string
-
-	conn, err := d.db.GetConn(context.Background())
-	if err != nil {
-		return ""
-	}
-
-	defer d.db.Close()
-
-	err = conn.QueryRow(context.Background(), "SELECT short_url FROM urls ORDER BY created_at DESC LIMIT 1").Scan(&lastElementID)
-
-	if err != nil && err.Error() == "no rows in result set" {
-		return ""
-	}
-
-	if err != nil {
-		panic(err)
-	}
-
-	return lastElementID
-}
-
-func (d DBURLStorage) GetItemsByUserID(userID uint32) []UserURLs {
+func (s DBURLStorage) GetRecordsByUserID(userID uint32) []UserURLs {
 	userURLs := make([]UserURLs, 0)
 
-	conn, err := d.db.GetConn(context.Background())
+	conn, err := s.db.GetConn(context.Background())
 	if err != nil {
 		return userURLs
 	}
 
-	defer d.db.Close()
+	defer s.db.Close()
 
 	rows, err := conn.Query(context.Background(), "SELECT short_url, original_url FROM urls WHERE user_id = $1", userID)
 	if err != nil {
