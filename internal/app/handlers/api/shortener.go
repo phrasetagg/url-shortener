@@ -75,12 +75,12 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 			return
 		}
 
-		shortURL, shortenErr := shortener.Shorten(userID, request.URL)
+		shortURL, err := shortener.Shorten(userID, request.URL)
 		response := response{Result: shortURL}
 
 		var iae *storage.ItemAlreadyExistsError
 
-		if errors.As(shortenErr, &iae) {
+		if errors.As(err, &iae) {
 			w.WriteHeader(http.StatusConflict)
 		} else {
 			w.WriteHeader(http.StatusCreated)
