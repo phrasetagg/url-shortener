@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"errors"
 	"io"
 	"net/http"
+	"phrasetagg/url-shortener/internal/app/middlewares"
 	"phrasetagg/url-shortener/internal/app/models"
+	"phrasetagg/url-shortener/internal/app/storage"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -34,7 +37,20 @@ func GetFullURL(shortener models.Shortener) http.HandlerFunc {
 
 func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		b, _ := io.ReadAll(r.Body)
+
+		rawUserID := r.Context().Value(middlewares.UserID)
+		var userID uint32
+
+		switch uidType := rawUserID.(type) {
+		case uint32:
+			userID = uidType
+		}
+
+		b, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, `{"error":"Something went wrong"}`, http.StatusInternalServerError)
+			return
+		}
 
 		URL := string(b)
 
@@ -43,11 +59,23 @@ func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 			return
 		}
 
-		res := shortener.Shorten(URL)
+		res, err := shortener.Shorten(userID, URL)
+
+		var iae *storage.ItemAlreadyExistsError
+
+		if errors.As(err, &iae) {
+			w.WriteHeader(http.StatusConflict)
+		}
+
+		if err != nil && !errors.As(err, &iae) {
+			http.Error(w, `{"error":"Something went wrong"}`, http.StatusInternalServerError)
+			return
+		}
 
 		w.WriteHeader(http.StatusCreated)
-		_, err := w.Write([]byte(res))
+		_, err = w.Write([]byte(res))
 		if err != nil {
+			http.Error(w, `{"error":"Something went wrong"}`, http.StatusInternalServerError)
 			return
 		}
 	}

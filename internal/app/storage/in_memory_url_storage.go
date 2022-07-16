@@ -6,41 +6,54 @@ import (
 )
 
 type InMemoryURLStorage struct {
-	urls  map[string]string
+	urls  map[string]URLItem
 	mutex *sync.RWMutex
+}
+
+type URLItem struct {
+	userID uint32
+	url    string
 }
 
 func NewInMemoryURLStorage() *InMemoryURLStorage {
 	return &InMemoryURLStorage{
-		urls:  make(map[string]string),
+		urls:  make(map[string]URLItem),
 		mutex: new(sync.RWMutex),
 	}
 }
 
-func (s *InMemoryURLStorage) GetItem(itemID string) (string, error) {
+func (s *InMemoryURLStorage) AddRecord(itemID string, value string, userID uint32) error {
+	s.mutex.Lock()
+	s.urls[itemID] = URLItem{url: value, userID: userID}
+	s.mutex.Unlock()
+
+	return nil
+}
+
+func (s *InMemoryURLStorage) GetOriginalURLByShortURI(itemID string) (string, error) {
 	s.mutex.RLock()
-	item, ok := s.urls[itemID]
+	urlItem, ok := s.urls[itemID]
 	s.mutex.RUnlock()
 
 	if !ok {
 		return "", errors.New("not found")
 	}
 
-	return item, nil
+	return urlItem.url, nil
 }
 
-func (s *InMemoryURLStorage) AddItem(itemID string, value string) {
-	s.mutex.Lock()
-	s.urls[itemID] = value
-	s.mutex.Unlock()
+func (s InMemoryURLStorage) GetShortURIByOriginalURL(originalURL string) (string, error) {
+	return originalURL, errors.New("in_memory_url_storage doesn't support this method")
 }
 
-func (s InMemoryURLStorage) GetLastElementID() string {
-	var shortURL string
+func (s InMemoryURLStorage) GetRecordsByUserID(userID uint32) []UserURLs {
+	var userURLs []UserURLs
 
-	for key := range s.urls {
-		shortURL = key
+	for key, value := range s.urls {
+		if value.userID == userID {
+			userURLs = append(userURLs, UserURLs{ShortURL: key, URL: value.url})
+		}
 	}
 
-	return shortURL
+	return userURLs
 }

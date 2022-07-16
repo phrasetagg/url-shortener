@@ -20,9 +20,8 @@ func TestShortenURLWithInMemoryStorage(t *testing.T) {
 	}
 
 	type want struct {
-		code           string
-		locationHeader string
-		body           string
+		code string
+		body string
 	}
 
 	tests := []struct {
@@ -38,7 +37,6 @@ func TestShortenURLWithInMemoryStorage(t *testing.T) {
 			},
 			want: want{
 				code: "201 Created",
-				body: `{"result":"http://localhost:8080/a"}`,
 			},
 		},
 		{
@@ -95,16 +93,14 @@ func TestShortenURLWithInMemoryStorage(t *testing.T) {
 			defer res.Body.Close()
 
 			assert.Equal(t, tt.want.code, res.Status)
-			assert.Equal(t, tt.want.body, strings.Trim(w.Body.String(), "\n"), "Unexpected body")
-
-			if tt.want.locationHeader != "" {
-				assert.Equal(t, tt.want.locationHeader, res.Header.Get("Location"), "Unexpected Location header value")
+			if tt.want.body != "" {
+				assert.Equal(t, tt.want.body, strings.Trim(w.Body.String(), "\n"), "Unexpected body")
 			}
 		})
 	}
 }
 
-func TestShortenURLWithFileStorage(t *testing.T) {
+func TestShortenURLWithFileURLStorage(t *testing.T) {
 	type args struct {
 		URL      string
 		shortURL string
@@ -112,9 +108,8 @@ func TestShortenURLWithFileStorage(t *testing.T) {
 	}
 
 	type want struct {
-		code           string
-		locationHeader string
-		body           string
+		code string
+		body string
 	}
 
 	tests := []struct {
@@ -130,7 +125,6 @@ func TestShortenURLWithFileStorage(t *testing.T) {
 			},
 			want: want{
 				code: "201 Created",
-				body: `{"result":"http://localhost:8080/a"}`,
 			},
 		},
 		{
@@ -141,7 +135,6 @@ func TestShortenURLWithFileStorage(t *testing.T) {
 			},
 			want: want{
 				code: "201 Created",
-				body: `{"result":"http://localhost:8080/b"}`,
 			},
 		},
 		{
@@ -152,6 +145,7 @@ func TestShortenURLWithFileStorage(t *testing.T) {
 			},
 			want: want{
 				code: "400 Bad Request",
+				body: `{"error":"URL in body is required"}`,
 			},
 		},
 		{
@@ -204,10 +198,9 @@ func TestShortenURLWithFileStorage(t *testing.T) {
 			defer res.Body.Close()
 
 			assert.Equal(t, tt.want.code, res.Status)
-			assert.Equal(t, tt.want.body, strings.Trim(w.Body.String(), "\n"), "Unexpected body")
-
-			if tt.want.locationHeader != "" {
-				assert.Equal(t, tt.want.locationHeader, res.Header.Get("Location"), "Unexpected Location header value")
+			assert.NotEmpty(t, w.Body)
+			if tt.want.body != "" {
+				assert.Equal(t, tt.want.body, strings.Trim(w.Body.String(), "\n"), "Unexpected body")
 			}
 		})
 	}

@@ -9,6 +9,7 @@ type cfg struct {
 	FileStoragePath string
 	BaseURL         string
 	ServerAddr      string
+	DBDsn           string
 }
 
 func PrepareCfg() *cfg {
@@ -17,6 +18,7 @@ func PrepareCfg() *cfg {
 	flag.StringVar(&cfg.FileStoragePath, "f", helpers.GetEnv("FILE_STORAGE_PATH", ""), "URLs file path")
 	flag.StringVar(&cfg.BaseURL, "b", helpers.GetEnv("BASE_URL", "http://localhost:8080/"), "short URLs base URL")
 	flag.StringVar(&cfg.ServerAddr, "a", helpers.GetEnv("SERVER_ADDRESS", "localhost:8080"), "host:port of the server")
+	flag.StringVar(&cfg.DBDsn, "d", helpers.GetEnv("DATABASE_DSN", ""), "Database DSN")
 
 	flag.Parse()
 
