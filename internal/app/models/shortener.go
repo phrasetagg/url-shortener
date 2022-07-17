@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"log"
 	"math/rand"
 	"phrasetagg/url-shortener/internal/app/storage"
 )
@@ -18,10 +19,10 @@ func NewShortener(storage storage.IURLStorager, baseURL string) Shortener {
 	}
 }
 
-func (s Shortener) GetFullURL(shortURL string) (string, error) {
-	fullURL, err := s.storage.GetOriginalURLByShortURI(shortURL)
+func (s Shortener) GetFullURL(shortURL string) (storage.OriginalURL, error) {
+	originalURL, err := s.storage.GetOriginalURLByShortURI(shortURL)
 
-	return fullURL, err
+	return originalURL, err
 }
 
 func (s Shortener) Shorten(userID uint32, URL string) (string, error) {
@@ -62,4 +63,13 @@ func (s Shortener) GetUserURLs(userID uint32) []storage.UserURLs {
 	}
 
 	return preparedUserURLs
+}
+
+func (s Shortener) DeleteURLs(userID uint32, shortURLs []string) {
+	go func() {
+		err := s.storage.DeleteUserRecordsByShortURLs(userID, shortURLs)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 }

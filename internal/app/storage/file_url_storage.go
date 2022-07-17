@@ -50,10 +50,13 @@ func (s *FileURLStorage) AddRecord(itemID string, value string, userID uint32) e
 	return nil
 }
 
-func (s *FileURLStorage) GetOriginalURLByShortURI(itemID string) (string, error) {
+func (s *FileURLStorage) GetOriginalURLByShortURI(itemID string) (OriginalURL, error) {
 	file, err := os.OpenFile(s.filePath, os.O_RDONLY|os.O_CREATE, 0777)
+
+	var originalURL OriginalURL
+
 	if err != nil {
-		return "", err
+		return originalURL, err
 	}
 
 	defer func(file *os.File) {
@@ -73,7 +76,8 @@ func (s *FileURLStorage) GetOriginalURLByShortURI(itemID string) (string, error)
 		res := strings.Split(row, " ")
 
 		if res[0] == itemID {
-			return res[1], nil
+			originalURL.OriginalURL = res[1]
+			return originalURL, nil
 		}
 
 		if err == io.EOF {
@@ -81,7 +85,7 @@ func (s *FileURLStorage) GetOriginalURLByShortURI(itemID string) (string, error)
 		}
 	}
 
-	return "", errors.New("not found")
+	return originalURL, errors.New("not found")
 }
 
 func (s FileURLStorage) GetShortURIByOriginalURL(originalURL string) (string, error) {
@@ -123,4 +127,8 @@ func (s FileURLStorage) GetRecordsByUserID(userID uint32) []UserURLs {
 	}
 
 	return userURLs
+}
+
+func (s FileURLStorage) DeleteUserRecordsByShortURLs(_ uint32, _ []string) error {
+	return errors.New("file_url_storage doesn't support this method")
 }

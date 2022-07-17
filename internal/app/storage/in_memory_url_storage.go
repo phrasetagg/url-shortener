@@ -30,16 +30,19 @@ func (s *InMemoryURLStorage) AddRecord(itemID string, value string, userID uint3
 	return nil
 }
 
-func (s *InMemoryURLStorage) GetOriginalURLByShortURI(itemID string) (string, error) {
+func (s *InMemoryURLStorage) GetOriginalURLByShortURI(itemID string) (OriginalURL, error) {
+	var originalURL OriginalURL
+
 	s.mutex.RLock()
 	urlItem, ok := s.urls[itemID]
+	originalURL.OriginalURL = urlItem.url
 	s.mutex.RUnlock()
 
 	if !ok {
-		return "", errors.New("not found")
+		return originalURL, errors.New("not found")
 	}
 
-	return urlItem.url, nil
+	return originalURL, nil
 }
 
 func (s InMemoryURLStorage) GetShortURIByOriginalURL(originalURL string) (string, error) {
@@ -56,4 +59,8 @@ func (s InMemoryURLStorage) GetRecordsByUserID(userID uint32) []UserURLs {
 	}
 
 	return userURLs
+}
+
+func (s InMemoryURLStorage) DeleteUserRecordsByShortURLs(_ uint32, _ []string) error {
+	return errors.New("in_memory_url_storage doesn't support this method")
 }

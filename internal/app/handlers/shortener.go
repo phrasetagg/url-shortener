@@ -20,7 +20,7 @@ func GetFullURL(shortener models.Shortener) http.HandlerFunc {
 			return
 		}
 
-		fullURL, err := shortener.GetFullURL(id)
+		originalURL, err := shortener.GetFullURL(id)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			_, err := w.Write([]byte(err.Error()))
@@ -30,7 +30,12 @@ func GetFullURL(shortener models.Shortener) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("Location", fullURL)
+		if originalURL.IsDeleted {
+			w.WriteHeader(http.StatusGone)
+			return
+		}
+
+		w.Header().Set("Location", originalURL.OriginalURL)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	}
 }

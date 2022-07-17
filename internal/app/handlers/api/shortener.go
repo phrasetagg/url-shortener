@@ -39,6 +39,43 @@ func GetUserURLs(shortener models.Shortener) http.HandlerFunc {
 	}
 }
 
+func DeleteUserURLs(shortener models.Shortener) http.HandlerFunc {
+	var request []string
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+
+		rawUserID := r.Context().Value(middlewares.UserID)
+		var userID uint32
+
+		switch uidType := rawUserID.(type) {
+		case uint32:
+			userID = uidType
+		}
+
+		b, _ := io.ReadAll(r.Body)
+		err := json.Unmarshal(b, &request)
+
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			http.Error(w, `{"error":"Invalid body"}`, http.StatusBadRequest)
+			return
+		}
+
+		if len(request) == 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			http.Error(w, `{"error":"Body must be not empty array"}`, http.StatusBadRequest)
+			return
+		}
+
+		shortener.DeleteURLs(userID, request)
+
+		w.WriteHeader(http.StatusAccepted)
+
+		return
+	}
+}
+
 func ShortenURL(shortener models.Shortener) http.HandlerFunc {
 	type request struct {
 		URL string `json:"url"`
