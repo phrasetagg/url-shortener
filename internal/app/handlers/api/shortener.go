@@ -69,10 +69,7 @@ func DeleteUserURLs(shortener models.Shortener) http.HandlerFunc {
 		}
 
 		shortener.DeleteURLs(userID, request)
-
 		w.WriteHeader(http.StatusAccepted)
-
-		return
 	}
 }
 
