@@ -4,9 +4,15 @@ import "fmt"
 
 type IURLStorager interface {
 	AddRecord(shortURI string, originalURL string, userID uint32) error
-	GetOriginalURLByShortURI(shortURI string) (string, error)
+	GetOriginalURLByShortURI(shortURI string) (OriginalURL, error)
 	GetShortURIByOriginalURL(originalURL string) (string, error)
 	GetRecordsByUserID(userID uint32) []UserURLs
+	DeleteUserRecordsByShortURLs(userID uint32, shortURLs []string) error
+}
+
+type OriginalURL struct {
+	OriginalURL string
+	IsDeleted   bool
 }
 
 type UserURLs struct {

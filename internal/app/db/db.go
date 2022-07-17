@@ -56,6 +56,7 @@ func (d *DB) CreateTables() {
 		"original_url text COLLATE pg_catalog.\"default\" NOT NULL,"+
 		"user_id bigint NOT NULL,"+
 		"created_at timestamp with time zone,"+
+		"is_deleted boolean default false,"+
 		"CONSTRAINT urls_pkey PRIMARY KEY (original_url)"+
 		")")
 

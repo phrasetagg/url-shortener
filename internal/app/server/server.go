@@ -49,6 +49,7 @@ func StartServer() {
 		// /api routes
 		r.Route("/api/", func(r chi.Router) {
 			r.Get("/user/urls", api.GetUserURLs(shortener))
+			r.Delete("/user/urls", api.DeleteUserURLs(shortener))
 			r.Post("/shorten", api.ShortenURL(shortener))
 			r.Post("/shorten/batch", api.ShortenURLBatch(shortener))
 		})
